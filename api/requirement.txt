@@ -1,0 +1,11 @@
+tensorflow
+sklearn
+matplotlib
+fastapi
+numpy 
+uvicorn 
+serpapi
+pandas
+io
+json
+PIL

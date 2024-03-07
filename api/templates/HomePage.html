@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ML Model Prediction</title>
+    <style>
+        /* Styling for the entire page */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            background-image: url("https://images.pexels.com/photos/96715/pexels-photo-96715.jpeg?auto=compress&cs=tinysrgb&w=600");
+            background-size: cover;
+            text-align: center;
+        }
+
+        /* Styling for the drop zone */
+        #dropZone {
+            width: 300px;
+            height: 300px;
+            border: 2px dashed #3498db;
+            text-align: center;
+            padding: 20px;
+            cursor: pointer;
+            position: relative;
+            margin: 20px auto;
+            background-color: springGreen;
+            border-radius: 10px;
+        }
+
+        #dropZone p {
+            font-size: 18px;
+            color: #555;
+            margin: 10px 0;
+        }
+
+        #selectedImage {
+            width: 340px;
+            height: 340px;
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        #iconImage {
+            max-width: 80%;
+            max-height: 80%;
+            display: block;
+            margin: 10% auto;
+        }
+
+        /* Styling for the Predict button */
+        button {
+            background-color: #3498db;
+            color: #fff;
+            font-size: 16px;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px;
+        }
+
+        /* Styling for the prediction result */
+        #prediction {
+            font-size: 18px;
+            color: #333;
+            background-color: #e5fff6;
+            padding: 20px; /* Add some padding for spacing */
+            margin: 50px auto; /* Center the remedies element */
+            border-radius: 10px; /* Add rounded corners */
+            max-width: 600px; /* Limit the width for readability */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Add a subtle box shadow */
+        }
+
+        #remedies {
+            font-size: 18px;
+            color: #333;
+            background-color: #e5fff6; /* Add a white background */
+            padding: 20px; /* Add some padding for spacing */
+            margin: 10px auto; /* Center the remedies element */
+            border-radius: 10px; /* Add rounded corners */
+            max-width: 600px; /* Limit the width for readability */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Add a subtle box shadow */
+        }
+    </style>
+</head>
+<body>
+    <!-- Create a drag-and-drop zone for selecting an image -->
+    <div id="dropZone">
+        <p>Drag & Drop an Image or Click to Choose</p>
+        <input type="file" id="fileInput" accept="image/*" style="display: none;">
+        <img id="selectedImage" src="" style="display: none;">
+        <img src="static/icon.png" id="iconImage">
+    </div>
+
+    <button onclick="predict()">Predict</button>
+    <p id="prediction"></p>
+    <p id="remedies"></p>
+
+    <button onclick="fetchAndDisplayVideos()">Video Solution</button>
+
+    <!-- New section for displaying videos -->
+    <div id="videoSection">
+        <h2>Videos</h2>
+        <div id="videoContainer"></div>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const selectedImage = document.getElementById('selectedImage');
+        const iconImage = document.getElementById('iconImage');
+        const predictionElement = document.getElementById('prediction');
+        
+
+        // Add event listeners to the drop zone
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.border = '2px dashed #333';
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.style.border = '2px dashed #ccc';
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.border = '2px dashed #ccc';
+            const file = e.dataTransfer.files[0];
+            fileInput.files = e.dataTransfer.files;
+            displayImage(file);
+        });
+
+        // Trigger file input when clicking on the drop zone
+        dropZone.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', () => {
+            displayImage(fileInput.files[0]);
+        });
+
+        async function displayImage(file) {
+            if (file) {
+                const imageURL = URL.createObjectURL(file);
+                selectedImage.src = imageURL;
+                selectedImage.style.display = 'block';
+                iconImage.style.display = 'none';
+            }
+        }
+
+        const remediesElement = document.getElementById('remedies');
+
+        function displayRemedies(predictedClass) {
+            let remedies = '';
+    
+            if (predictedClass === 'Early Blight') {
+                remedies = `
+                    <strong>Treatment:</strong>
+                    <ol>
+                        <li>Prune or stake plants to improve air circulation and reduce fungal problems.</li>
+                        <li>Make sure to disinfect your pruning shears (one part bleach to 4 parts water) after each cut.</li>
+                        <li>Keep the soil under plants clean and free of garden debris. Add a layer of organic compost to prevent the spores from splashing back up onto vegetation.</li>
+                        <li>Drip irrigation and soaker hoses can be used to help keep the foliage dry.</li>
+                        <li>For best control, apply copper-based fungicides early, two weeks before the disease normally appears or when weather forecasts predict a long period of wet weather.</li>
+                        <li>Containing copper and pyrethrins, Bonide® Garden Dust is a safe, one-step control for many insect attacks and fungal problems.</li>
+                        <li>SERENADE Garden is a broad spectrum, preventative bio-fungicide recommended for the control or suppression of many important plant diseases.</li>
+                        <li>Remove and destroy all garden debris after harvest and practice crop rotation the following year. Burn or bag infected plant parts. Do NOT compost.</li>
+                    </ol>
+                `;
+            } else if (predictedClass === 'Late Blight') {
+                remedies = `<strong>Treatment:</strong> 
+                <ol>
+                    <li>Plant resistant cultivars when available.</li>
+                    <li>Remove volunteers from the garden prior to planting and space plants far enough apart to allow for plenty of air circulation.</li>
+                    <li>Water in the early morning hours, or use soaker hoses, to give plants time to dry out during the day — avoid overhead irrigation.</li>
+                    <li>Destroy all tomato and potato debris after harvest (see Fall Garden Cleanup).</li>
+                    <strong> If symptoms are observed, treat plants with one of the following fungicides:</strong>
+                    <li>Apply a copper based fungicide (2 oz/ gallon of water) every 7 days or less, following heavy rain or when the amount of disease is increasing rapidly. If possible, time applications so that at least 12 hours of dry weather follows application.</li>
+                    <li>Used as a foliar spray, Organocide® Plant Doctor will work its way through the entire plant to prevent fungal problems from occurring and attack existing many problems. Mix 2 tsp/ gallon of water and spray at transplant or when direct seeded crops are at 2-4 true leaf, then at 1-2 week intervals as required to control disease.</li>
+                    <li>Safely treat fungal problems with SERENADE Garden. This broad spectrum bio-fungicide uses a patented strain of Bacillus subtilis and is approved for organic use. Best of all, SERENADE is completely non-toxic to honey bees and beneficial insects.</li>
+                    <li>Monterey® All Natural Disease Control is a ready-to-use blend of naturally occurring ingredients that control most plant foliar diseases. All stages of the disease is controlled, but applying before infestation gives the best results.</li>
+                </ol>
+                `;
+            } else if (predictedClass === 'Healthy') {
+                remedies = `<strong>No Disease Detected. No remedies needed.</strong>`;
+            } else {
+                remedies = `<strong>Unknown class. Remedies not available.</strong>`;
+            }
+    
+            remediesElement.innerHTML = remedies;
+        }
+
+        async function predict() {
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            const response = await fetch('/predict/', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                predictionElement.textContent = `Class: ${data.class}, Confidence: ${(data.confidence.toFixed(2) * 100)} %`;
+                displayRemedies(data.class);
+            } else {
+                predictionElement.textContent = 'Error predicting.';
+            }
+        }
+
+
+        async function fetchAndDisplayVideos() {
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            const response = await fetch('/fetch_videos/', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                displayVideos(data.videos);
+            } else {
+                console.error('Error fetching videos.');
+            }
+        }
+
+        // Your existing displayVideos function
+        function displayVideos(videoLinks) {
+            const videoContainer = document.getElementById('videoContainer');
+            videoContainer.innerHTML = ''; // Clear previous videos
+    
+            videoLinks.forEach((link) => {
+                // Replace the direct link with the YouTube embed code
+                const videoId = extractVideoId(link);
+                const iframe = document.createElement('iframe');
+                iframe.setAttribute('width', '560');
+                iframe.setAttribute('height', '315');
+                iframe.setAttribute('src', `https://www.youtube.com/embed/${videoId}`);
+                iframe.setAttribute('allow', 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture');
+                iframe.setAttribute('allowfullscreen', '');
+                videoContainer.appendChild(iframe);
+            });
+        }
+    
+        // Function to extract video ID from YouTube URL
+        function extractVideoId(url) {
+            const match = url.match(/[?&]v=([^?&]+)/);
+            return match && match[1] ? match[1] : url;
+        }
+
+
+    </script>
+</body>
+</html>
+
+
+
+
+
+
