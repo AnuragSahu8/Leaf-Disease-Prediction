@@ -4,6 +4,7 @@ Allow the farmers to directly upload the image of the crop and get the result in
 # technology used- fastapi (framework) , deep leaning(CNN architecture ) , python 
 
 following are the steps performed during the process:
+
 1.Collect the dataset from kaggle and divide it into batches to enhance computational efficiency.
 
 2.Perform preprocessing task-:
